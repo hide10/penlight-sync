@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#000000" />
+    <title>Penlight Sync</title>
+<style>
+      body {
+        background: #000;
+        color: #fff;
+        font-family: system-ui, sans-serif;
+        height: 100svh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2rem;
+        overflow: hidden;
+        transition: background-color 0.05s ease;
+      }
+
+      #loading {
+        font-size: 1rem;
+        color: #aaa;
+      }
+
+      #error {
+        display: none;
+        font-size: 0.9rem;
+        color: #f88;
+        padding: 1rem;
+        text-align: center;
+      }
+
+      #start-btn {
+        display: none;
+        padding: 1.5rem 3rem;
+        font-size: 1.5rem;
+        font-weight: bold;
+        background: #fff;
+        color: #000;
+        border: none;
+        border-radius: 999px;
+        cursor: pointer;
+      }
+
+      #start-btn:disabled {
+        opacity: 0.5;
+      }
+
+      #status {
+        font-size: 0.85rem;
+        color: #aaa;
+      }
+
+      #status[data-state='playing'] {
+        color: #4caf50;
+      }
+
+      #status[data-state='countdown'] {
+        color: #ffcc00;
+        font-size: 1.25rem;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="loading">読み込み中...</div>
+    <div id="error"></div>
+    <button id="start-btn">スタート</button>
+    <div id="status"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

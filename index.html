@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#000000" />
+    <title>Penlight Sync</title>
+    <link rel="stylesheet" href="/public/style.css" />
+  </head>
+  <body class="participant">
+    <div id="overlay">
+      <button id="join-btn">タップして参加</button>
+      <p id="torch-hint">カメラのフラッシュも使用します</p>
+    </div>
+    <div id="torch-indicator" title="フラッシュ非対応"></div>
+    <div id="status" data-status="connecting">接続中...</div>
+    <script type="module" src="/src/client.ts"></script>
+  </body>
+</html>

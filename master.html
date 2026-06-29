@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Penlight Sync — マスター</title>
+    <link rel="stylesheet" href="/public/style.css" />
+  </head>
+  <body class="master">
+    <div id="master-ui">
+      <header>
+        <h1>Penlight Sync</h1>
+        <div id="conn-status" data-status="connecting">接続中...</div>
+      </header>
+
+      <!-- Color preview -->
+      <div id="color-preview"></div>
+
+      <!-- Preset colors + picker -->
+      <section class="section">
+        <h2>色</h2>
+        <div id="preset-colors"></div>
+        <label class="picker-label">
+          カスタム色
+          <input type="color" id="color-picker" value="#ff0000" />
+        </label>
+      </section>
+
+      <!-- Flash controls -->
+      <section class="section">
+        <h2>フラッシュ</h2>
+        <div class="btn-row">
+          <button id="torch-on" class="ctrl-btn">フラッシュ ON</button>
+          <button id="torch-off" class="ctrl-btn">フラッシュ OFF</button>
+        </div>
+      </section>
+
+      <!-- Strobe controls -->
+      <section class="section">
+        <h2>ストロボ</h2>
+        <div class="btn-row">
+          <button id="strobe-toggle" class="ctrl-btn" data-active="false">ストロボ開始</button>
+        </div>
+        <div class="slider-row">
+          <label for="bpm-slider">BPM</label>
+          <input type="range" id="bpm-slider" min="60" max="180" value="120" step="10" />
+          <span id="bpm-label">120</span>
+        </div>
+      </section>
+
+      <!-- All off -->
+      <section class="section">
+        <button id="all-off" class="ctrl-btn danger">全消灯</button>
+      </section>
+
+      <!-- Status + QR -->
+      <footer>
+        <div id="participant-info">
+          参加者: <strong id="participant-count">0</strong> 人
+        </div>
+        <div id="qr-section">
+          <canvas id="qr-canvas"></canvas>
+          <p id="qr-url"></p>
+        </div>
+      </footer>
+    </div>
+
+    <script type="module" src="/src/master.ts"></script>
+  </body>
+</html>
