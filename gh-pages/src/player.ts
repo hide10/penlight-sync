@@ -13,9 +13,16 @@ export class TimelinePlayer {
   private timers: number[] = [];
   private state: PlayerState = { color: '#ffffff', strobeTimer: null };
   private onTick?: (event: ShowEvent) => void;
+  private loop = false;
+  private loopGap = 0;
 
   setOnTick(fn: (event: ShowEvent) => void): void {
     this.onTick = fn;
+  }
+
+  setLoop(enabled: boolean, gapMs = 0): void {
+    this.loop = enabled;
+    this.loopGap = gapMs;
   }
 
   load(events: ShowEvent[]): void {
@@ -37,6 +44,14 @@ export class TimelinePlayer {
         Math.max(0, delay),
       );
       this.timers.push(timer);
+    }
+
+    // schedule loop restart after last event
+    if (this.loop && this.events.length > 0) {
+      const lastT = this.events[this.events.length - 1].t;
+      const loopDelay = Math.max(0, lastT - offsetMs) + this.loopGap;
+      const loopTimer = window.setTimeout(() => this.start(), loopDelay);
+      this.timers.push(loopTimer);
     }
   }
 

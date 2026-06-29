@@ -59,6 +59,7 @@ async function init(): Promise<void> {
   try {
     timeline = await loadTimeline(getShowUrl());
     player.load(timeline.events);
+    player.setLoop(timeline.loop ?? false, timeline.loopGap ?? 0);
   } catch (err) {
     loadingEl.style.display = 'none';
     errorEl.textContent = `エラー: ${err instanceof Error ? err.message : String(err)}`;

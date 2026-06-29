@@ -8,5 +8,7 @@ export interface ShowEvent {
 
 export interface Timeline {
   startAt?: string;
+  loop?: boolean;
+  loopGap?: number; // ms between loops (default 0)
   events: ShowEvent[];
 }

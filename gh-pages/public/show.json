@@ -1,4 +1,6 @@
 {
+  "loop": true,
+  "loopGap": 1000,
   "events": [
     { "t": 0,     "type": "color",  "color": "#ff0000" },
     { "t": 3000,  "type": "color",  "color": "#ff6600" },
