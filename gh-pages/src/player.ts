@@ -9,61 +9,80 @@ interface PlayerState {
 
 export class TimelinePlayer {
   private events: ShowEvent[] = [];
-  private startTime: number | null = null;
   private timers: number[] = [];
-  private state: PlayerState = { color: '#ffffff', strobeTimer: null };
+  private state: PlayerState = { color: '#000000', strobeTimer: null };
   private onTick?: (event: ShowEvent) => void;
-  private loop = false;
-  private loopGap = 0;
+  private duration: number | null = null;
+  private _running = false;
 
   setOnTick(fn: (event: ShowEvent) => void): void {
     this.onTick = fn;
   }
 
-  setLoop(enabled: boolean, gapMs = 0): void {
-    this.loop = enabled;
-    this.loopGap = gapMs;
-  }
-
-  load(events: ShowEvent[]): void {
+  load(events: ShowEvent[], duration?: number): void {
     this.stop();
     this.events = [...events].sort((a, b) => a.t - b.t);
+    this.duration = duration ?? null;
   }
 
-  // Start relative to "now". If offsetMs is given, start mid-sequence (for startAt sync).
-  start(offsetMs = 0): void {
+  // 絶対時刻同期モード: Date.now() % duration でオフセット算出
+  start(): void {
     this.stop();
-    this.startTime = Date.now() - offsetMs;
-
-    for (const event of this.events) {
-      const delay = event.t - offsetMs;
-      if (delay < -500) continue; // already passed by more than 0.5s, skip
-
-      const timer = window.setTimeout(
-        () => this.dispatch(event),
-        Math.max(0, delay),
-      );
-      this.timers.push(timer);
-    }
-
-    // schedule loop restart after last event
-    if (this.loop && this.events.length > 0) {
-      const lastT = this.events[this.events.length - 1].t;
-      const loopDelay = Math.max(0, lastT - offsetMs) + this.loopGap;
-      const loopTimer = window.setTimeout(() => this.start(), loopDelay);
-      this.timers.push(loopTimer);
-    }
+    this._running = true;
+    this.playFromCurrentOffset();
   }
 
   stop(): void {
+    this._running = false;
     for (const t of this.timers) clearTimeout(t);
     this.timers = [];
     this.stopStrobe();
-    this.startTime = null;
   }
 
   get isRunning(): boolean {
-    return this.startTime !== null;
+    return this._running;
+  }
+
+  private playFromCurrentOffset(): void {
+    if (!this._running) return;
+
+    const duration = this.duration;
+    const offset = duration ? Date.now() % duration : 0;
+    const timeUntilCycleEnd = duration ? duration - offset : Infinity;
+
+    // まず現在オフセット時点での「最新状態」を即時適用（画面をいきなり正しい色に）
+    const currentEvent = this.findCurrentState(offset);
+    if (currentEvent) this.applyEvent(currentEvent);
+
+    // 残りのイベントをスケジュール
+    for (const event of this.events) {
+      const delay = event.t - offset;
+      if (delay <= 0) continue; // 既に過去のイベントはスキップ
+
+      const timer = window.setTimeout(() => {
+        if (this._running) this.dispatch(event);
+      }, delay);
+      this.timers.push(timer);
+    }
+
+    // サイクル終端で再計算（ドリフト補正）
+    if (duration) {
+      const cycleTimer = window.setTimeout(
+        () => this.playFromCurrentOffset(),
+        timeUntilCycleEnd,
+      );
+      this.timers.push(cycleTimer);
+    }
+  }
+
+  // 現在時刻より前の最後の color/off イベントを探して画面色を即時設定
+  private findCurrentState(offset: number): ShowEvent | null {
+    let last: ShowEvent | null = null;
+    for (const event of this.events) {
+      if (event.t > offset) break;
+      if (event.type === 'color' || event.type === 'off') last = event;
+    }
+    return last;
   }
 
   private dispatch(event: ShowEvent): void {
@@ -81,8 +100,7 @@ export class TimelinePlayer {
         }
         break;
       case 'torch':
-        // torch is handled externally via onTick
-        break;
+        break; // torch は onTick で外部処理
       case 'strobe':
         if (event.bpm && event.bpm > 0) {
           this.startStrobe(event.bpm);

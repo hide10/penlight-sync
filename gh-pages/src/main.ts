@@ -22,44 +22,15 @@ player.setOnTick((event: ShowEvent) => {
   }
 });
 
-let countdownTimer: number | null = null;
-
-function startCountdown(startAt: Date): void {
-  const statusEl = document.getElementById('status')!;
-
-  function tick(): void {
-    const msLeft = startAt.getTime() - Date.now();
-    if (msLeft <= 0) {
-      if (countdownTimer !== null) clearInterval(countdownTimer);
-      statusEl.textContent = '再生中';
-      statusEl.dataset['state'] = 'playing';
-      player.start(Math.abs(msLeft));
-      return;
-    }
-    const totalSec = Math.ceil(msLeft / 1000);
-    const min = Math.floor(totalSec / 60);
-    const sec = totalSec % 60;
-    statusEl.textContent = `開始まで ${min}:${String(sec).padStart(2, '0')}`;
-  }
-
-  tick();
-  countdownTimer = window.setInterval(tick, 500);
-}
-
 async function init(): Promise<void> {
-  const statusEl = document.getElementById('status')!;
-  const startBtn = document.getElementById('start-btn') as HTMLButtonElement;
   const loadingEl = document.getElementById('loading')!;
   const errorEl = document.getElementById('error')!;
-
-  statusEl.textContent = 'ロード中...';
-  statusEl.dataset['state'] = 'loading';
+  const torchBtn = document.getElementById('torch-btn') as HTMLButtonElement;
 
   let timeline: Timeline;
   try {
     timeline = await loadTimeline(getShowUrl());
-    player.load(timeline.events);
-    player.setLoop(timeline.loop ?? false, timeline.loopGap ?? 0);
+    player.load(timeline.events, timeline.duration);
   } catch (err) {
     loadingEl.style.display = 'none';
     errorEl.textContent = `エラー: ${err instanceof Error ? err.message : String(err)}`;
@@ -67,38 +38,27 @@ async function init(): Promise<void> {
     return;
   }
 
-  if (timeline.startAt) {
-    const startAt = new Date(timeline.startAt);
-    const msLeft = startAt.getTime() - Date.now();
-    if (msLeft > 0) {
-      loadingEl.style.display = 'none';
-      statusEl.dataset['state'] = 'countdown';
-      startCountdown(startAt);
-      return;
-    }
-    // Already past startAt: start immediately with offset
-    loadingEl.style.display = 'none';
-    statusEl.textContent = '再生中';
-    statusEl.dataset['state'] = 'playing';
-    player.start(Date.now() - startAt.getTime());
-    return;
-  }
-
-  // Manual start: show button
+  // 絶対時刻同期で即再生（ユーザー操作不要）
   loadingEl.style.display = 'none';
-  startBtn.style.display = 'block';
-  statusEl.textContent = 'スタートを押してください';
-  statusEl.dataset['state'] = 'waiting';
+  player.start();
 
-  startBtn.addEventListener('click', async () => {
-    startBtn.disabled = true;
-    startBtn.textContent = '準備中...';
-    await torch.init();
-    startBtn.style.display = 'none';
-    statusEl.textContent = '再生中';
-    statusEl.dataset['state'] = 'playing';
-    player.start();
-  });
+  // torch はオプション：ボタンをタップして有効化
+  torchBtn.style.display = 'block';
+  torchBtn.addEventListener('click', async () => {
+    torchBtn.disabled = true;
+    torchBtn.textContent = '許可中...';
+    const ok = await torch.init();
+    torchBtn.textContent = ok ? 'フラッシュ ON' : '非対応';
+    torchBtn.disabled = !ok;
+    if (ok) {
+      torchBtn.addEventListener('click', async () => {
+        const active = torchBtn.dataset['active'] === 'true';
+        await torch.setTorch(!active);
+        torchBtn.dataset['active'] = String(!active);
+        torchBtn.textContent = !active ? 'フラッシュ ON' : 'フラッシュ OFF';
+      }, { once: false });
+    }
+  }, { once: true });
 }
 
 void init();

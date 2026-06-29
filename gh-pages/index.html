@@ -5,71 +5,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <meta name="theme-color" content="#000000" />
     <title>Penlight Sync</title>
-<style>
-      body {
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body {
+        width: 100%; height: 100svh;
         background: #000;
-        color: #fff;
-        font-family: system-ui, sans-serif;
-        height: 100svh;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 2rem;
         overflow: hidden;
         transition: background-color 0.05s ease;
       }
-
       #loading {
-        font-size: 1rem;
-        color: #aaa;
+        position: fixed; inset: 0;
+        display: flex; align-items: center; justify-content: center;
+        color: #aaa; font-family: system-ui, sans-serif; font-size: 1rem;
       }
-
       #error {
         display: none;
-        font-size: 0.9rem;
-        color: #f88;
-        padding: 1rem;
-        text-align: center;
+        position: fixed; inset: 0;
+        align-items: center; justify-content: center;
+        color: #f88; font-family: system-ui, sans-serif;
+        padding: 2rem; text-align: center;
       }
-
-      #start-btn {
+      #torch-btn {
         display: none;
-        padding: 1.5rem 3rem;
-        font-size: 1.5rem;
-        font-weight: bold;
-        background: #fff;
-        color: #000;
-        border: none;
+        position: fixed;
+        bottom: 1.5rem; right: 1.5rem;
+        padding: 0.6rem 1.1rem;
+        font-size: 0.8rem;
+        background: rgba(255,255,255,0.15);
+        color: #fff;
+        border: 1px solid rgba(255,255,255,0.3);
         border-radius: 999px;
         cursor: pointer;
+        backdrop-filter: blur(4px);
+        -webkit-tap-highlight-color: transparent;
       }
-
-      #start-btn:disabled {
-        opacity: 0.5;
-      }
-
-      #status {
-        font-size: 0.85rem;
-        color: #aaa;
-      }
-
-      #status[data-state='playing'] {
-        color: #4caf50;
-      }
-
-      #status[data-state='countdown'] {
-        color: #ffcc00;
-        font-size: 1.25rem;
-        font-weight: bold;
+      #torch-btn[data-active='true'] {
+        background: rgba(255,220,0,0.3);
+        border-color: rgba(255,220,0,0.6);
       }
     </style>
   </head>
   <body>
     <div id="loading">読み込み中...</div>
     <div id="error"></div>
-    <button id="start-btn">スタート</button>
-    <div id="status"></div>
+    <button id="torch-btn">フラッシュ</button>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

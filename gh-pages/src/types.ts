@@ -8,7 +8,6 @@ export interface ShowEvent {
 
 export interface Timeline {
   startAt?: string;
-  loop?: boolean;
-  loopGap?: number; // ms between loops (default 0)
+  duration?: number; // loop cycle length in ms (enables absolute-time sync)
   events: ShowEvent[];
 }
