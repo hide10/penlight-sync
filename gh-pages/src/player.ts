@@ -13,16 +13,18 @@ export class TimelinePlayer {
   private state: PlayerState = { color: '#000000', strobeTimer: null };
   private onTick?: (event: ShowEvent) => void;
   private duration: number | null = null;
+  private clockOffset = 0; // ms to add to Date.now() for server-synced time
   private _running = false;
 
   setOnTick(fn: (event: ShowEvent) => void): void {
     this.onTick = fn;
   }
 
-  load(events: ShowEvent[], duration?: number): void {
+  load(events: ShowEvent[], duration?: number, clockOffset = 0): void {
     this.stop();
     this.events = [...events].sort((a, b) => a.t - b.t);
     this.duration = duration ?? null;
+    this.clockOffset = clockOffset;
   }
 
   // 絶対時刻同期モード: Date.now() % duration でオフセット算出
@@ -47,7 +49,8 @@ export class TimelinePlayer {
     if (!this._running) return;
 
     const duration = this.duration;
-    const offset = duration ? Date.now() % duration : 0;
+    const now = Date.now() + this.clockOffset;
+    const offset = duration ? now % duration : 0;
     const timeUntilCycleEnd = duration ? duration - offset : Infinity;
 
     // まず現在オフセット時点での「最新状態」を即時適用（画面をいきなり正しい色に）
